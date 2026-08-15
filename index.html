@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schüler-Rapport Formular</title>
+
+  <!-- Zuverlässige Online-Bibliotheken -->
+  <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.11/build/docxtemplater.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 600px; margin: auto; background-color: #f2f2f7; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h2, h3 { color: #1c1c1e; margin-top: 0; }
+    label { font-weight: 600; display: block; margin-top: 12px; margin-bottom: 4px; font-size: 14px; color: #3a3a3c; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #c7c7cc; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fff; }
+    .row { display: flex; gap: 10px; }
+    .col { flex: 1; }
+    button { width: 100%; margin-top: 20px; padding: 14px; background-color: #007aff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+  </style>
+</head>
+<body>
+
+<form id="rapportForm">
+  <!-- Empfänger & Briefkopf -->
+  <div class="card">
+    <h2>Schüler-Rapport Generieren</h2>
+    <h3>Empfänger (Erziehungsberechtigte)</h3>
+    <label>Anrede</label>
+    <select id="Anrede">
+      <option value="Herrn und Frau">Herrn und Frau</option>
+      <option value="Frau">Frau</option>
+      <option value="Herrn">Herrn</option>
+    </select>
+
+    <label>Vorname & Name</label>
+    <input type="text" id="VornameName" placeholder="Max und Erika Muster">
+
+    <label>Adresse</label>
+    <input type="text" id="Adresse" placeholder="Musterstrasse 12">
+
+    <div class="row">
+      <div class="col">
+        <label>PLZ & Ort</label>
+        <input type="text" id="PLZ_Ort" placeholder="6000 Luzern">
+      </div>
+      <div class="col">
+        <label>Telefonnummer Erziehungsberechtigte</label>
+        <input type="text" id="Eltern_Telefon" placeholder="079 123 45 67">
+      </div>
+    </div>
+
+    <label>Brief-Datum</label>
+    <input type="text" id="Datum_Brief" value="Emmen, 15. August 2026">
+  </div>
+
+  <!-- Verwaltungsvermerke -->
+  <div class="card">
+    <h3>Verwaltungsdaten</h3>
+    <label>Dienststelle</label>
+    <input type="text" id="Dienststelle" placeholder="z. B. Region North">
+
+    <div class="row">
+      <div class="col">
+        <label>Sachbearbeiter/in</label>
+        <input type="text" id="Sachbearbeiter">
+      </div>
+      <div class="col">
+        <label>Rapport Datum</label>
+        <input type="date" id="RapportDatum">
+      </div>
+    </div>
+  </div>
+
+  <!-- Beteiligung & Fahrzeug -->
+  <div class="card">
+    <h3>Beteiligung & Fahrzeug</h3>
+    <div class="row">
+      <div class="col">
+        <label>Beteiligungsart</label>
+        <select id="Beteiligungsart">
+          <option value="Lenker/in">Lenker/in</option>
+          <option value="Fussgänger/in">Fussgänger/in</option>
+          <option value="Mitfahrer/in">Mitfahrer/in</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Fahrzeugart</label>
+        <select id="Fahrzeugart">
+          <option value="Fahrrad">Fahrrad</option>
+          <option value="Motorfahrrad">Motorfahrrad</option>
+          <option value="Fahrzeugähnliche Geräte">Fahrzeugähnliche Geräte</option>
+          <option value="Keines">Keines</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label>Marke</label>
+        <input type="text" id="Marke">
+      </div>
+      <div class="col">
+        <label>Kontrollschild</label>
+        <input type="text" id="Kontrollschild">
+      </div>
+    </div>
+  </div>
+
+  <!-- Übertretungen -->
+  <div class="card">
+    <h3>Übertretung</h3>
+    <label>Übertretung gegen das Strassenverkehrsgesetz (SVG)</label>
+    <input type="text" id="Uebertretung_SVG" placeholder="z. B. Fahren ohne Licht nachts">
+
+    <label>Widerhandlung UeSTG (Littering)</label>
+    <input type="text" id="Uebertretung_Littering" placeholder="Anmerkung zu Littering">
+  </div>
+
+  <!-- Kontrolldaten & Betroffener -->
+  <div class="card">
+    <h3>Kontrolldaten & Betroffener</h3>
+    <div class="row">
+      <div class="col">
+        <label>Datum / Zeit der Kontrolle</label>
+        <input type="text" id="KontrollDatumZeit" placeholder="15.08.2026, 14:30 Uhr">
+      </div>
+      <div class="col">
+        <label>Ort / Strasse</label>
+        <input type="text" id="KontrollOrt">
+      </div>
+    </div>
+
+    <label>Kind: Name / Vorname</label>
+    <input type="text" id="Kind_NameVorname">
+
+    <label>Kind: Geburtsdatum</label>
+    <input type="date" id="Kind_Geburtsdatum">
+
+    <label>Schulpflichtig in (Ort / Schulhaus)</label>
+    <input type="text" id="Schule_OrtSchulhaus">
+  </div>
+
+  <!-- Kontakt Sachbearbeiter -->
+  <div class="card">
+    <h3>Ergänzung Sachbearbeiter</h3>
+    <div class="row">
+      <div class="col">
+        <label>Funktion</label>
+        <input type="text" id="SB_Funktion" placeholder="Schulinstruktor/in">
+      </div>
+      <div class="col">
+        <label>Direktwahl</label>
+        <input type="text" id="SB_Direktwahl">
+      </div>
+    </div>
+
+    <button type="button" onclick="generiereWord()">Word-Dokument erstellen & herunterladen</button>
+  </div>
+</form>
+
+<script>
+  function formatiereDatum(datumString) {
+    if (!datumString) return "";
+    const teile = datumString.split("-");
+    if (teile.length !== 3) return datumString;
+    return `${teile[2]}.${teile[1]}.${teile[0]}`;
+  }
+
+  async function generiereWord() {
+    if (typeof PizZip === "undefined") {
+      alert("Fehler: Die PizZip-Bibliothek wurde nicht geladen.");
+      return;
+    }
+
+    // Name der Vorlage-Datei im selben Ordner auf GitHub Pages
+    const vorlageUrl = 'Schueler_Rapport_Vorlage.docx';
+
+    try {
+      // Word-Vorlage automatisch per Fetch laden
+      const response = await fetch(vorlageUrl);
+      if (!response.ok) {
+        throw new Error(`Konnte Vorlage nicht laden (${response.statusText}). Bitte prüfen Sie, ob die Datei "${vorlageUrl}" auf GitHub existiert.`);
+      }
+      
+      const content = await response.arrayBuffer();
+      const zip = new PizZip(content);
+      const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+      // Datumswerte formatieren
+      const geburtsdatumFormatiert = formatiereDatum(document.getElementById('Kind_Geburtsdatum').value);
+      const rapportDatumFormatiert = formatiereDatum(document.getElementById('RapportDatum').value);
+
+      // Formulardaten auslesen
+      const daten = {
+        Anrede: document.getElementById('Anrede').value,
+        VornameName: document.getElementById('VornameName').value,
+        Adresse: document.getElementById('Adresse').value,
+        PLZ_Ort: document.getElementById('PLZ_Ort').value,
+        Eltern_Telefon: document.getElementById('Eltern_Telefon').value,
+        Datum_Brief: document.getElementById('Datum_Brief').value,
+        
+        Dienststelle: document.getElementById('Dienststelle').value,
+        Sachbearbeiter: document.getElementById('Sachbearbeiter').value,
+        RapportDatum: rapportDatumFormatiert,
+        
+        Beteiligungsart: document.getElementById('Beteiligungsart').value,
+        Fahrzeugart: document.getElementById('Fahrzeugart').value,
+        Marke: document.getElementById('Marke').value,
+        Kontrollschild: document.getElementById('Kontrollschild').value,
+        
+        Uebertretung_SVG: document.getElementById('Uebertretung_SVG').value,
+        Uebertretung_Littering: document.getElementById('Uebertretung_Littering').value,
+        
+        KontrollDatumZeit: document.getElementById('KontrollDatumZeit').value,
+        KontrollOrt: document.getElementById('KontrollOrt').value,
+        
+        Kind_NameVorname: document.getElementById('Kind_NameVorname').value,
+        Kind_Geburtsdatum: geburtsdatumFormatiert,
+        
+        Schule_OrtSchulhaus: document.getElementById('Schule_OrtSchulhaus').value,
+        SB_Funktion: document.getElementById('SB_Funktion').value,
+        SB_Direktwahl: document.getElementById('SB_Direktwahl').value
+      };
+
+      // Word-Dokument befüllen & herunterladen
+      doc.render(daten);
+      const blob = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      const kindName = daten.Kind_NameVorname || "Schueler";
+      const dateiname = "Rapport_" + kindName.replace(/\s+/g, '_') + ".docx";
+      saveAs(blob, dateiname);
+
+    } catch (err) {
+      alert("Fehler beim Erstellen der Word-Datei: " + err.message);
+      console.error(err);
+    }
+  }
+</script>
+
+</body>
+</html>
