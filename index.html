@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schüler-Rapport Formular</title>
+  <title>Schüler-Rapport Formular (Offline)</title>
 
-  <!-- Zuverlässige Online-Bibliotheken -->
-  <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.37.11/build/docxtemplater.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <!-- Lokale Einbindung der Bibliotheken (kein Internet notwendig) -->
+  <script src="pizzip.min.js"></script>
+  <script src="docxtemplater.js"></script>
+  <script src="FileSaver.min.js"></script>
 
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; max-width: 600px; margin: auto; background-color: #f2f2f7; }
@@ -20,14 +20,24 @@
     .col { flex: 1; }
     button { width: 100%; margin-top: 20px; padding: 14px; background-color: #007aff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
     button:hover { background-color: #0056b3; }
+    .file-input-box { background-color: #eef2ff; border: 2px dashed #007aff; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
 <form id="rapportForm">
+  <!-- Vorlage auswählen (für 100% Offline-Kompatibilität im Browser) -->
+  <div class="card">
+    <h2>1. Word-Vorlage auswählen</h2>
+    <div class="file-input-box">
+      <label for="vorlageFile" style="margin-top:0; cursor:pointer;">Bitte wählen Sie Ihre lokale Vorlage (.docx) aus:</label>
+      <input type="file" id="vorlageFile" accept=".docx" style="margin-top:8px;">
+    </div>
+  </div>
+
   <!-- Empfänger & Briefkopf -->
   <div class="card">
-    <h2>Schüler-Rapport Generieren</h2>
+    <h2>2. Schüler-Rapport Daten</h2>
     <h3>Empfänger (Erziehungsberechtigte)</h3>
     <label>Anrede</label>
     <select id="Anrede">
@@ -158,7 +168,7 @@
       </div>
     </div>
 
-    <button type="button" onclick="generiereWord()">Word-Dokument erstellen & herunterladen</button>
+    <button type="button" onclick="generiereWord()">Word-Dokument lokal erstellen</button>
   </div>
 </form>
 
@@ -170,77 +180,82 @@
     return `${teile[2]}.${teile[1]}.${teile[0]}`;
   }
 
-  async function generiereWord() {
-    if (typeof PizZip === "undefined") {
-      alert("Fehler: Die PizZip-Bibliothek wurde nicht geladen.");
+  function generiereWord() {
+    // Prüfen, ob Bibliotheken lokal geladen sind
+    if (typeof PizZip === "undefined" || typeof docxtemplater === "undefined" || typeof saveAs === "undefined") {
+      alert("Fehler: Mindestens eine der erforderlichen JS-Bibliotheken (pizzip.min.js, docxtemplater.js, FileSaver.min.js) wurde nicht lokal gefunden.");
       return;
     }
 
-    // Name der Vorlage-Datei im selben Ordner auf GitHub Pages
-    const vorlageUrl = 'Schueler_Rapport_Vorlage.docx';
-
-    try {
-      // Word-Vorlage automatisch per Fetch laden
-      const response = await fetch(vorlageUrl);
-      if (!response.ok) {
-        throw new Error(`Konnte Vorlage nicht laden (${response.statusText}). Bitte prüfen Sie, ob die Datei "${vorlageUrl}" auf GitHub existiert.`);
-      }
-      
-      const content = await response.arrayBuffer();
-      const zip = new PizZip(content);
-      const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-
-      // Datumswerte formatieren
-      const geburtsdatumFormatiert = formatiereDatum(document.getElementById('Kind_Geburtsdatum').value);
-      const rapportDatumFormatiert = formatiereDatum(document.getElementById('RapportDatum').value);
-
-      // Formulardaten auslesen
-      const daten = {
-        Anrede: document.getElementById('Anrede').value,
-        VornameName: document.getElementById('VornameName').value,
-        Adresse: document.getElementById('Adresse').value,
-        PLZ_Ort: document.getElementById('PLZ_Ort').value,
-        Eltern_Telefon: document.getElementById('Eltern_Telefon').value,
-        Datum_Brief: document.getElementById('Datum_Brief').value,
-        
-        Dienststelle: document.getElementById('Dienststelle').value,
-        Sachbearbeiter: document.getElementById('Sachbearbeiter').value,
-        RapportDatum: rapportDatumFormatiert,
-        
-        Beteiligungsart: document.getElementById('Beteiligungsart').value,
-        Fahrzeugart: document.getElementById('Fahrzeugart').value,
-        Marke: document.getElementById('Marke').value,
-        Kontrollschild: document.getElementById('Kontrollschild').value,
-        
-        Uebertretung_SVG: document.getElementById('Uebertretung_SVG').value,
-        Uebertretung_Littering: document.getElementById('Uebertretung_Littering').value,
-        
-        KontrollDatumZeit: document.getElementById('KontrollDatumZeit').value,
-        KontrollOrt: document.getElementById('KontrollOrt').value,
-        
-        Kind_NameVorname: document.getElementById('Kind_NameVorname').value,
-        Kind_Geburtsdatum: geburtsdatumFormatiert,
-        
-        Schule_OrtSchulhaus: document.getElementById('Schule_OrtSchulhaus').value,
-        SB_Funktion: document.getElementById('SB_Funktion').value,
-        SB_Direktwahl: document.getElementById('SB_Direktwahl').value
-      };
-
-      // Word-Dokument befüllen & herunterladen
-      doc.render(daten);
-      const blob = doc.getZip().generate({
-        type: "blob",
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      });
-
-      const kindName = daten.Kind_NameVorname || "Schueler";
-      const dateiname = "Rapport_" + kindName.replace(/\s+/g, '_') + ".docx";
-      saveAs(blob, dateiname);
-
-    } catch (err) {
-      alert("Fehler beim Erstellen der Word-Datei: " + err.message);
-      console.error(err);
+    const fileInput = document.getElementById('vorlageFile');
+    if (!fileInput.files || fileInput.files.length === 0) {
+      alert("Bitte wählen Sie zuerst oben Ihre Word-Vorlage (.docx) aus.");
+      return;
     }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      try {
+        const content = e.target.result;
+        const zip = new PizZip(content);
+        const doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+        // Datumswerte formatieren
+        const geburtsdatumFormatiert = formatiereDatum(document.getElementById('Kind_Geburtsdatum').value);
+        const rapportDatumFormatiert = formatiereDatum(document.getElementById('RapportDatum').value);
+
+        // Formulardaten auslesen (rein lokaler Speicher)
+        const daten = {
+          Anrede: document.getElementById('Anrede').value,
+          VornameName: document.getElementById('VornameName').value,
+          Adresse: document.getElementById('Adresse').value,
+          PLZ_Ort: document.getElementById('PLZ_Ort').value,
+          Eltern_Telefon: document.getElementById('Eltern_Telefon').value,
+          Datum_Brief: document.getElementById('Datum_Brief').value,
+          
+          Dienststelle: document.getElementById('Dienststelle').value,
+          Sachbearbeiter: document.getElementById('Sachbearbeiter').value,
+          RapportDatum: rapportDatumFormatiert,
+          
+          Beteiligungsart: document.getElementById('Beteiligungsart').value,
+          Fahrzeugart: document.getElementById('Fahrzeugart').value,
+          Marke: document.getElementById('Marke').value,
+          Kontrollschild: document.getElementById('Kontrollschild').value,
+          
+          Uebertretung_SVG: document.getElementById('Uebertretung_SVG').value,
+          Uebertretung_Littering: document.getElementById('Uebertretung_Littering').value,
+          
+          KontrollDatumZeit: document.getElementById('KontrollDatumZeit').value,
+          KontrollOrt: document.getElementById('KontrollOrt').value,
+          
+          Kind_NameVorname: document.getElementById('Kind_NameVorname').value,
+          Kind_Geburtsdatum: geburtsdatumFormatiert,
+          
+          Schule_OrtSchulhaus: document.getElementById('Schule_OrtSchulhaus').value,
+          SB_Funktion: document.getElementById('SB_Funktion').value,
+          SB_Direktwahl: document.getElementById('SB_Direktwahl').value
+        };
+
+        // Word-Dokument ausfüllen & herunterladen (findet zu 100% im Arbeitsspeicher des Browsers statt)
+        doc.render(daten);
+        const blob = doc.getZip().generate({
+          type: "blob",
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
+
+        const kindName = daten.Kind_NameVorname || "Schueler";
+        const dateiname = "Rapport_" + kindName.replace(/\s+/g, '_') + ".docx";
+        saveAs(blob, dateiname);
+
+      } catch (err) {
+        alert("Fehler beim Erstellen der Word-Datei: " + err.message);
+        console.error(err);
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
   }
 </script>
 
